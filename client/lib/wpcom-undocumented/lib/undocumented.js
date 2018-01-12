@@ -1625,16 +1625,18 @@ Undocumented.prototype.graduateNewReader = function( fn ) {
  * @param {string} variation - The variation the user is assigned to
  * @param {Function} fn - Function to invoke when request is complete
  * @api public
+ * @returns {Object} wpcomRequest
  */
 Undocumented.prototype.saveABTestData = function( name, variation, fn ) {
-	var data = {
-		name: name,
-		variation: variation,
+	const body = {
+		name,
+		variation,
 	};
+	debug( `/me/abtests with ${ JSON.stringify( body ) }` );
 	return this.wpcom.req.post(
 		{
 			path: '/me/abtests',
-			body: data,
+			body,
 		},
 		fn
 	);
