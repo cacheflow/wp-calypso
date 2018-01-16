@@ -11,8 +11,10 @@ import { recordTracksEvent } from 'state/analytics/actions';
 /**
  * Internal dependencies
  */
+import config from 'config';
 import Main from 'components/main';
 import Wizard from 'components/wizard';
+import { addQueryArgs, externalRedirect } from 'lib/route';
 import {
 	JETPACK_ONBOARDING_COMPONENTS as COMPONENTS,
 	JETPACK_ONBOARDING_STEPS as STEPS,
@@ -28,22 +30,43 @@ class JetpackOnboardingMain extends React.PureComponent {
 		stepName: STEPS.SITE_TITLE,
 	};
 
-	// TODO: Add lifecycle methods to redirect if no siteId
+	componentDidMount() {
+		const { siteId, siteSlug } = this.props;
+
+		// If we are missing the Jetpack onboarding credentials,
+		// redirect back to wp-admin so we can obtain them again.
+		if ( ! siteId && siteSlug ) {
+			const siteDomain = siteSlug.replace( '::', '/' );
+			const url = addQueryArgs(
+				{
+					page: 'jetpack',
+					action: 'onboard',
+					calypso_env: config( 'env_id' ),
+				},
+				`//${ siteDomain }/wp-admin/admin.php`
+			);
+			externalRedirect( url );
+		}
+	}
 
 	render() {
 		const { recordJpoEvent, siteId, siteSlug, stepName, steps } = this.props;
 		return (
 			<Main className="jetpack-onboarding">
-				<Wizard
-					basePath="/jetpack/onboarding"
-					baseSuffix={ siteSlug }
-					components={ COMPONENTS }
-					hideNavigation={ stepName === STEPS.SUMMARY }
-					recordJpoEvent={ recordJpoEvent }
-					siteId={ siteId }
-					stepName={ stepName }
-					steps={ steps }
-				/>
+				{ siteId ? (
+					<Wizard
+						basePath="/jetpack/onboarding"
+						baseSuffix={ siteSlug }
+						components={ COMPONENTS }
+						hideNavigation={ stepName === STEPS.SUMMARY }
+						recordJpoEvent={ recordJpoEvent }
+						siteId={ siteId }
+						stepName={ stepName }
+						steps={ steps }
+					/>
+				) : (
+					<div className="jetpack-onboarding__loading wpcom-site__logo noticon noticon-wordpress" />
+				) }
 			</Main>
 		);
 	}
