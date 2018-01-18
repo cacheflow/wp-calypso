@@ -15,7 +15,6 @@ import { translate } from 'i18n-calypso';
 import analytics from 'lib/analytics';
 import CheckoutData from 'components/data/checkout';
 import config from 'config';
-import { getLocaleFromPath, removeLocaleFromPath } from 'lib/i18n-utils';
 import JetpackAuthorize from './authorize';
 import JetpackConnect from './main';
 import JetpackNewSite from './jetpack-new-site/index';
@@ -24,16 +23,17 @@ import JetpackSsoForm from './sso';
 import NoDirectAccessError from './no-direct-access-error';
 import Plans from './plans';
 import PlansLanding from './plans-landing';
-import { sectionify } from 'lib/route';
 import userFactory from 'lib/user';
 import { authorizeQueryDataSchema } from './schema';
 import { authQueryTransformer } from './utils';
+import { getLocaleFromPath, removeLocaleFromPath } from 'lib/i18n-utils';
 import { JETPACK_CONNECT_QUERY_SET } from 'state/action-types';
 import { JPC_PATH_PLANS, MOBILE_APP_REDIRECT_URL_WHITELIST } from './constants';
+import { persistMobileRedirect, storePlan } from './persistence-utils';
 import { receiveJetpackOnboardingCredentials } from 'state/jetpack-onboarding/actions';
+import { sectionify } from 'lib/route';
 import { setDocumentHeadTitle as setTitle } from 'state/document-head/actions';
 import { setSection } from 'state/ui/actions';
-import { persistMobileRedirect, storePlan } from './persistence-utils';
 import { urlToSlug } from 'lib/url';
 import {
 	PLAN_JETPACK_PREMIUM,
