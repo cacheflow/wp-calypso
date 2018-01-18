@@ -452,7 +452,7 @@ export const PostEditor = createReactClass( {
 						onViewClick={ this.onPreview }
 					/>
 				</div>
-				{ isTrashed ? (
+				{ this.isNotDraft() && isTrashed ? (
 					<RestorePostDialog onClose={ this.onClose } onRestore={ this.onSaveTrashed } />
 				) : null }
 				{ this.state.showVerifyEmailDialog ? (
@@ -488,6 +488,10 @@ export const PostEditor = createReactClass( {
 		this.props.editPost( this.props.siteId, this.props.postId, {
 			title: revision.title,
 		} );
+	},
+
+	isNotDraft: function() {
+		return utils.isPublished( this.state.savedPost ) || utils.isPublished( this.state.post );
 	},
 
 	closeAutosaveDialog: function() {
@@ -596,7 +600,6 @@ export const PostEditor = createReactClass( {
 
 	autosave: function() {
 		var callback;
-
 		if ( this.state.isSaving === true || this.isSaveBlocked() ) {
 			return;
 		}
@@ -613,7 +616,6 @@ export const PostEditor = createReactClass( {
 		if ( ! PostEditStore.isDirty() || ! PostEditStore.hasContent() || ! this.state.post ) {
 			return;
 		}
-
 		if ( utils.isPublished( this.state.savedPost ) || utils.isPublished( this.state.post ) ) {
 			callback = function() {};
 		} else {
@@ -846,7 +848,6 @@ export const PostEditor = createReactClass( {
 
 	onSaveDraftSuccess: function() {
 		const { post } = this.state;
-
 		if ( utils.isPublished( post ) ) {
 			this.onSaveSuccess( 'updated' );
 		} else {
@@ -912,7 +913,6 @@ export const PostEditor = createReactClass( {
 
 	onPublishSuccess: function() {
 		const { savedPost } = this.state;
-
 		let message;
 		if ( utils.isPrivate( savedPost ) ) {
 			message = 'publishedPrivately';
