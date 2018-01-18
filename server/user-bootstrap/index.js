@@ -1,22 +1,21 @@
 /** @format */
-var superagent = require( 'superagent' ),
-	debug = require( 'debug' )( 'calypso:bootstrap' ),
-	crypto = require( 'crypto' );
+const superagent = require( 'superagent' );
+const debug = require( 'debug' )( 'calypso:bootstrap' );
+const crypto = require( 'crypto' );
 
-var config = require( 'config' ),
-	API_KEY = config( 'wpcom_calypso_rest_api_key' ),
-	userUtils = require( './shared-utils' ),
-	AUTH_COOKIE_NAME = 'wordpress_logged_in',
-	/**
-	 * WordPress.com REST API /me endpoint.
-	 */
-	url = 'https://public-api.wordpress.com/rest/v1/me?meta=flags';
+const config = require( 'config' );
+const API_KEY = config( 'wpcom_calypso_rest_api_key' );
+const userUtils = require( './shared-utils' );
+const AUTH_COOKIE_NAME = 'wordpress_logged_in';
+
+/**
+ * WordPress.com REST API /me endpoint.
+ */
+const url = 'https://public-api.wordpress.com/rest/v1/me?meta=flags';
 
 module.exports = function( authCookieValue, callback ) {
 	// create HTTP Request object
-	var req = superagent.get( url ),
-		hmac,
-		hash;
+	const req = superagent.get( url );
 
 	if ( authCookieValue ) {
 		authCookieValue = decodeURIComponent( authCookieValue );
@@ -26,9 +25,9 @@ module.exports = function( authCookieValue, callback ) {
 			return;
 		}
 
-		hmac = crypto.createHmac( 'md5', API_KEY );
+		const hmac = crypto.createHmac( 'md5', API_KEY );
 		hmac.update( authCookieValue );
-		hash = hmac.digest( 'hex' );
+		const hash = hmac.digest( 'hex' );
 
 		req.set( 'Authorization', 'X-WPCALYPSO ' + hash );
 		req.set( 'Cookie', AUTH_COOKIE_NAME + '=' + authCookieValue );
@@ -37,28 +36,26 @@ module.exports = function( authCookieValue, callback ) {
 
 	// start the request
 	req.end( function( err, res ) {
-		var body, statusCode, user, error, key;
-
 		if ( err && ! res ) {
 			return callback( err );
 		}
 
-		body = res.body;
-		statusCode = res.status;
+		const body = res.body;
+		const statusCode = res.status;
 
 		debug( '%o -> %o status code', url, statusCode );
 
 		if ( err ) {
-			error = new Error();
+			const error = new Error();
 			error.statusCode = statusCode;
-			for ( key in body ) {
+			for ( const key in body ) {
 				error[ key ] = body[ key ];
 			}
 
 			return callback( error );
 		}
 
-		user = userUtils.filterUserObject( body );
+		const user = userUtils.filterUserObject( body );
 		callback( null, user );
 	} );
 };
